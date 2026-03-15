@@ -2,7 +2,7 @@ const express = require('express');
 const bcryptjs = require('bcryptjs');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-
+const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 router.post('/register', async (req,res)=>{
@@ -53,6 +53,10 @@ router.post('/login', async (req,res)=>{
     catch(error){
         res.status(500).json({message: "Server down."});
     }
+})
+
+router.get('/protected', authMiddleware, (req, res)=>{
+    res.json({message:"User logged in!"});
 })
 
 module.exports = router;
