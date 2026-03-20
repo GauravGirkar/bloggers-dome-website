@@ -25,7 +25,7 @@ router.get('/:id', async (req,res)=>{
         res.status(200).json({message:"Post fetched successfully.", postFetched})
     }
     catch(error){
-        res.status(500).json({message:"Server error", error})
+        res.status(500).json({message:"Server error", error: error.message})
     }
 })
 
@@ -53,12 +53,52 @@ router.post('/create', authMiddleware, async (req,res)=>{
     }
 })
 
-router.put('/:id', authMiddleware, async(req, res)=>{
-
-})
+router.patch('/:id', authMiddleware, async(req, res)=>{
+    const postId = req.params.id;
+    if(!mongoose.Types.ObjectId.isValid(postId)){
+        return res.status(404).json({message:"Post not found!"});
+    }    
+    const { title, content, image } = req.body;
+    try{
+        const fetchedPost = await Post.findById(postId);
+        if(!fetchedPost){return res.status(404).json({message:"Post not found"})}
+        if(fetchedPost.author.toString()==req.user.id){
+            const updatedPost = await Post.findByIdAndUpdate(
+                postId,
+                { title, content, image},
+                {new:true}
+            )
+            return res.status(200).json({message:"Post updated successfully", updatedPost})
+        }
+        else{
+            return res.status(403).json({message:"forbidden access"})
+        }
+    }
+    catch(error){
+        return res.status(500).json({message:"Server error"})
+    }
+})  
 
 router.delete('/:id', authMiddleware, async(req,res)=>{
-
+    const postId = req.params.id;
+    
+    if(!mongoose.Types.ObjectId.isValid(postId)){
+        return res.status(404).json({message:"Post not found!"});
+    }    
+    try{
+        const fetchedPost = await Post.findById(postId);
+        if(!fetchedPost){return res.status(404).json({message:"Post not found"})}
+        if(fetchedPost.author.toString()==req.user.id){
+            await Post.findByIdAndDelete(postId)
+            return res.status(200).json({message:"Post deleted successfully"})
+        }
+        else{
+            return res.status(403).json({message:"forbidden access"})
+        }
+    }
+    catch(error){
+        return res.status(500).json({message:"Server error"})
+    }
 })
 
 module.exports = router;
