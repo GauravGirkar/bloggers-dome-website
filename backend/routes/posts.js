@@ -1,14 +1,32 @@
 const express = require('express');
 const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Post = require('../models/Post');
 
 router.get('/', async (req,res)=>{
-
+    try{
+        const postFetched = await Post.find().populate('author','name username profile_pic');
+        res.status(200).json({message:"Posts fetched successfully.", postFetched})
+    }
+    catch(error){
+        res.status(500).json({message:"Server error"});
+    }
 })
 
 router.get('/:id', async (req,res)=>{
-
+    try{
+        const postId = req.params.id;
+        if(!mongoose.Types.ObjectId.isValid(postId)){
+            return res.status(404).json({message:"Post not found!"});
+        }
+        const postFetched = await Post.findById(postId).populate('author', 'name username profile_pic');
+        if(!postFetched){return res.status(404).json({message:"Post not found!"})}
+        res.status(200).json({message:"Post fetched successfully.", postFetched})
+    }
+    catch(error){
+        res.status(500).json({message:"Server error", error})
+    }
 })
 
 router.post('/create', authMiddleware, async (req,res)=>{
