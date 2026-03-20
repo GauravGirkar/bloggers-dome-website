@@ -101,4 +101,27 @@ router.delete('/:id', authMiddleware, async(req,res)=>{
     }
 })
 
+router.post('/:id/like', authMiddleware, async(req, res)=>{
+    const postId = req.params.id;
+    try{
+        const post = await Post.findById(postId);
+        if(!post){ return res.status(404).json({message:"Post not found"}) }
+        
+        const alreadyLiked = post.likes.includes(req.user.id);
+        
+        if(alreadyLiked){
+            post.likes.pull(req.user.id);
+            await post.save();
+            return res.status(200).json({message:"Post unliked", likes: post.likes.length})
+        } else {
+            post.likes.push(req.user.id);
+            await post.save();
+            return res.status(200).json({message:"Post liked", likes: post.likes.length})
+        }
+    }
+    catch(error){
+        return res.status(500).json({message:"Server error"})
+    }
+})
+
 module.exports = router;
