@@ -5,7 +5,7 @@ const cors =require('cors');
 const authRoutes = require('./routes/auth.js');
 const postRoutes = require('./routes/posts.js');
 const commentRoutes = require('./routes/comment.js');
-
+const userProfileRoutes = require('./routes/user.js')
 const app=express();
 
 
@@ -16,6 +16,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/posts', commentRoutes);
+app.use('/api/user', userProfileRoutes);
 app.use("/", (req,res,next)=>{
     console.log("Home page loaded!");
     res.status(200).json({message:"API running"});
